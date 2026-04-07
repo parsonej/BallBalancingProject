@@ -9,14 +9,14 @@ desx = 0
 desy = 0
 
 def test(t):
-    return 0
+    return [0,0]
 
 def manual(t):
       
-    return 0
+    return [0,0]
 
 def circle(t):
-    rpm = 6
+    rpm = 15
     rps = rpm/60
     radius = 60
     desx = round(60*math.sin(t * rps * 6.28),1)

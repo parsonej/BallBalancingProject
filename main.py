@@ -19,8 +19,8 @@ import controlla
 import numpy as np
 
 # VARIABLES
-runtime = 90 # [s] time before ending program
-rate = 30 # [hz] rate that servo positions are set
+runtime = 10 # [s] time before ending program
+rate = 20 # [hz] max rate at which servo positions are set
 dt = 1/rate # needed time between cycles to hit rate
 historyct = 100 # number of points captured for vel/int stuff
 timeinit = time.time()
@@ -29,6 +29,7 @@ timeinit = time.time()
 def updateMotion():
 	global desX
 	global desY
+	# test = zeros, circle = you can prolly guess
 	des = motion.circle(time.time()-timeinit)
 	desX = des[0]
 	desY = des[1]
@@ -62,6 +63,9 @@ while True:
 	else:
 		histDX = np.concatenate(([DX], histDX[0:-1]))
 		histDY = np.concatenate(([DY], histDY[0:-1]))
+	
+	#servo.setx(controlla.PID(histDX))
+	#servo.sety(controlla.PID(histDY))
 	
 	servo.setx(controlla.PID(histDX))
 	servo.sety(controlla.PID(histDY))

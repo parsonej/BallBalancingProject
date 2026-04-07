@@ -11,7 +11,7 @@ def zero():
 
 # position (linear) ctrl:
 def pos(histDX):
-	gain = -.1
+	gain = -.07
 	return gain*histDX[0]
 
 # position + derivative ctrl:
@@ -24,11 +24,11 @@ def derv(histDX):
 
 # position + integral + derivative ctrl:
 def PID(histDX):
-	gain = -.15
-	trample = -.05
-	damper = -3
+	gain = -.05
+	trample = -.01
+	damper = -.5
 	
-	dervSamples = 3
+	dervSamples = 5
 	deltaX = histDX[0]
 	areaDX = np.sum(histDX[0])
 	deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
