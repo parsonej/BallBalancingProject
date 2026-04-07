@@ -2,14 +2,14 @@
 # call turnoff() to turn off servos
 import pigpio
 import time
+import numpy as np
 
 # CONSTANTS
 xPIN = 18 # GPIO pin of the siginal wire to the x-servo
 yPIN = 19 # GPIO pin of the siginal wire to the y-servo
-xOFFSET = -8.7 # manual adjustment to fix zero angle
-yOFFSET = -3.0 # manual adjustment to fix zero angle
-levelangle = 25
-maxangle=30
+xOFFSET = 16 # manual adjustment to fix zero angle
+yOFFSET = 48 #23 manual adjustment to fix zero angle
+maxangle = 50
 
 
 # Setup pigpio
@@ -19,33 +19,39 @@ if not pigpio.pi().connected:
 
 pig = pigpio.pi()  # Connect once
     
-def setx(angle):
+def setx(platformangle):
 # Convert angle (-90 to 90) to pulsewidth (500–2500 microseconds)
-    angle=constrain(angle)
+    angle=convert(np.radians(platformangle))
     
-    pulsewidth = int(500 + (90 - angle - xOFFSET - levelangle) / 255 * 2000)
+    pulsewidth = int(1500 + (-angle - xOFFSET)*2000/255 )
     # i think that 255 is the full ROM of the servo. or sm. 
     # idk whatever, it seems to get roughly 180deg range, cool w me
     pig.set_servo_pulsewidth(xPIN, pulsewidth)
     
-def sety(angle):
+def sety(platformangle):
     # Convert angle (-90 to 90) to pulsewidth (500–2500 microseconds)
-    angle=constrain(angle)
+    angle=convert(np.radians(platformangle))
     
-    pulsewidth = int(500 + (90 - angle - yOFFSET + levelangle) / 255 * 2000)
+    pulsewidth = int(1500 + (angle - yOFFSET)*2000/255)
     # i think that 255 is the full ROM of the servo. or sm. 
     # idk whatever, it seems to get roughly 180deg range, cool w me
     pig.set_servo_pulsewidth(yPIN, pulsewidth)
 
 def constrain(angle):
     if (angle>=maxangle):
-        print("servo angle greater than maximum, constraining")
+        print("servo angle greater than maximum, constraining; " + str(int(angle)))
         angle=maxangle
     if (angle<=-maxangle):
-        print("servo angle greater than maximum, constraining")
+        print("servo angle greater than maximum, constraining; " + str(int(angle)))
         angle=-maxangle
     return angle
-
+    
+def convert(platformangle):
+    #angle = -22.5*np.cos(platformangle) -4.65*np.sin(platformangle)
+    angle = 37 * np.tan(platformangle*3) + 11.81 * np.cos(platformangle*4)
+    return constrain(angle)
+    
+    
 def turnoff():
     print("leveling platform and stopping servos")
     setx(0)
