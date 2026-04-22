@@ -19,7 +19,7 @@ import controlla
 import numpy as np
 
 # VARIABLES
-runtime = 10 # [s] time before ending program
+runtime = 17 # [s] time before ending program
 rate = 20 # [hz] max rate at which servo positions are set
 dt = 1/rate # needed time between cycles to hit rate
 historyct = 100 # number of points captured for vel/int stuff
@@ -30,7 +30,7 @@ def updateMotion():
 	global desX
 	global desY
 	# test = zeros, circle = you can prolly guess
-	des = motion.circle(time.time()-timeinit)
+	des = motion.test(time.time()-timeinit)
 	desX = des[0]
 	desY = des[1]
 updateMotion()
@@ -74,13 +74,13 @@ while True:
 
 	Dt = time.time()-tstart # actual time per cycle
 
-	print("pos:",str(posX),",",str(posY),"  delta:",str(DX),",",str(DY),"  dt:",round(Dt,3))
+	print("pos:",str(posX),",",str(posY),"  delta:",str(DX),",",str(DY),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
 
 	if time.time() > timeout:
 		break
 	if (dt > Dt):
 		time.sleep(dt - Dt)
 
-servo.turnoff()
 camera.turnoff()
-time.sleep(2)
+servo.turnoff()
+time.sleep(3)

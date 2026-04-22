@@ -4,6 +4,9 @@
 import math
 import numpy as np
 
+# note: gain = position Pid constant
+#		damper = derivative piD constant	
+#		accel = integral pId constant
 
 # do nothing:
 def zero():
@@ -24,16 +27,23 @@ def derv(histDX):
 
 # position + integral + derivative ctrl:
 def PID(histDX):
-	gain = -.05
-	trample = -.01
-	damper = -.5
 	
-	dervSamples = 5
+# note: gain = position Pid constant
+#		damper = derivative piD constant	
+#		accel = integral pId constant
+
+	gain = -.05
+	accel = -.015
+	damper = -1.5
+	
+	dervSamples = 12
+	intSamples = 50
+	
 	deltaX = histDX[0]
-	areaDX = np.sum(histDX[0])
+	areaDX = np.average(histDX[0:50]) #this technically finds the mean offset, not the sum of offset. 
 	deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
 	
-	return gain*deltaX + trample*areaDX + damper*deltaV
+	return gain*deltaX + accel*areaDX + damper*deltaV
 
 # sqrt(position) + derivative^2 ctrl:
 def sqdv(histDX):

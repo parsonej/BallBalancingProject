@@ -17,13 +17,14 @@ def getCoords():
 	global cX
 	global cY
 	global rotated
+	global blur
 	global gray
 	global thresh
 	# take a frame
 	image = picam2.capture_array()
 	resized = cv2.resize(image, (675,675), interpolation = cv2.INTER_AREA)
 	rotated = cv2.rotate(resized, cv2.ROTATE_180)
-	blur = cv2.blur(rotated,(7,7))
+	blur = cv2.blur(rotated,(30,30))
 	gray = cv2.cvtColor(blur, cv2.COLOR_RGB2GRAY)
 	ret,thresh = cv2.threshold(gray,220,255,0)
 	
@@ -67,10 +68,15 @@ def dispframe(desX,desY):
 	
 def settarget():
 	# sets frame to display based on current runtime
-	tenSecLoop = int(time.time()%10)
+	# timeLoop = int(time.time()/5)%3
+	timeLoop = 3
 	global target
-	if(tenSecLoop >= 5):
+	if(timeLoop == 0):
 		target = thresh
+	elif(timeLoop == 1):
+		target = blur
+	elif(timeLoop == 2):
+		target = gray
 	else:
 		target = rotated
 		

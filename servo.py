@@ -7,8 +7,8 @@ import numpy as np
 # CONSTANTS
 xPIN = 18 # GPIO pin of the siginal wire to the x-servo
 yPIN = 19 # GPIO pin of the siginal wire to the y-servo
-xOFFSET = 16 # manual adjustment to fix zero angle
-yOFFSET = 48 #23 manual adjustment to fix zero angle
+xOFFSET = 19 # manual adjustment to fix zero angle
+yOFFSET = 50 #23 manual adjustment to fix zero angle
 maxangle = 50
 
 
@@ -61,3 +61,5 @@ def turnoff():
     pig.set_servo_pulsewidth(yPIN, 0)
     time.sleep(.2)
     pig.stop()
+    time.sleep(.2)
+
