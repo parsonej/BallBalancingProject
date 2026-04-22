@@ -89,7 +89,7 @@ while True:
 	if (dt > Dt):
 		time.sleep(dt - Dt)
 
-score, metrics = controlla.calculate_performance(all_errors_x, all_errors_y, dt)
+score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
 print(f"Performance Score: {score:.2f}")
 print(f"Metrics: {metrics}")
 
