@@ -80,7 +80,7 @@ while True:
 		break
 	if (dt > Dt):
 		time.sleep(dt - Dt)
-score, metrics = controlla.calculate_performance(histDX, histDY, dt)
+score, metrics = motion.calculate_performance(histDX, histDY, dt)
 print(f"Performance Score: {score:.2f}")
 print(f"Metrics: {metrics}")
 
