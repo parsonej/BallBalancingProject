@@ -20,6 +20,28 @@ setpoints = [
     (14, [-20,-20]),
     (17, [0, 0])
 ]
+def calculate_performance(error_history_x, error_history_y, dt):
+    """
+    Calculate performance metrics from error history
+    Returns: score and detailed metrics
+    """
+    import numpy as np
+    
+    mae_x = np.mean(np.abs(error_history_x))
+    mae_y = np.mean(np.abs(error_history_y))
+    mae = (mae_x + mae_y) / 2
+    
+    iae_x = np.sum(np.abs(error_history_x)) * dt
+    iae_y = np.sum(np.abs(error_history_y)) * dt
+    iae = (iae_x + iae_y) / 2
+    
+    max_err_x = np.max(np.abs(error_history_x))
+    max_err_y = np.max(np.abs(error_history_y))
+    
+    # Composite score (lower is better)
+    score = mae + 0.3*iae + 0.1*max(max_err_x, max_err_y)
+    
+    return score, {'MAE': mae, 'IAE': iae, 'MaxErr': max(max_err_x, max_err_y)}
 
 test_times = [p[0] for p in setpoints]
 test_posns = [p[1] for p in setpoints]
