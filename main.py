@@ -50,12 +50,20 @@ updateDX()
 histDX = [DX, DX]
 histDY = [DY, DY]
 
+all_errors_x = []
+all_errors_y = []
+timestamps = []
+
 timeout = time.time() + runtime
 
 while True: 
 	tstart = time.time()
 	updateMotion()
 	updateDX()
+
+	all_errors_x.append(abs(DX))
+	all_errors_y.append(abs(DY))
+	timestamps.append(time.time() - timeinit)
 
 	if(len(histDX) > historyct):
 		histDX = np.concatenate(([DX], histDX))
@@ -80,9 +88,12 @@ while True:
 		break
 	if (dt > Dt):
 		time.sleep(dt - Dt)
-score, metrics = motion.calculate_performance(histDX, histDY, dt)
+
+score, metrics = controlla.calculate_performance(all_errors_x, all_errors_y, dt)
 print(f"Performance Score: {score:.2f}")
 print(f"Metrics: {metrics}")
+
+controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
 
 camera.turnoff()
 servo.turnoff()
