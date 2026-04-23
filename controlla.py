@@ -39,7 +39,7 @@ def PID(histDX):
 	
 	dervSamples = 12
 	intSamples = 50
-	
+	# deltaX is the current error, areaDX is the mean error over the last intSamples frames, and deltaV is the mean derivative over the last dervSamples frames.
 	deltaX = histDX[0]
 	areaDX = np.average(histDX[0:50]) #this technically finds the mean offset, not the sum of offset. 
 	deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
@@ -55,6 +55,8 @@ def sqdv(histDX):
 	if (abs(deltaX) < 1):
 		return -damper*deltaV*abs(deltaV)
 	return gain*deltaX/math.sqrt(abs(deltaX)) + damper*deltaV*abs(deltaV)
+
+
 def plot_errors(timestamps, errorDX, errorDY, save_path="error_plot.png"):
 	"""Plot tracking error over time"""
 	fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6), sharex=True)

@@ -22,78 +22,62 @@ import numpy as np
 runtime = 17 # [s] time before ending program
 rate = 20 # [hz] max rate at which servo positions are set
 dt = 1/rate # needed time between cycles to hit rate
-historyct = 100 # number of points captured for vel/int stuff
+maxHistory = 100 # number of points captured for vel/int stuff
 timeinit = time.time()
 
 # SETUP
-def updateMotion():
-	global desX
-	global desY
-	# test = zeros, circle = you can prolly guess
+def update_motion_DX():
+	pos = camera.getCoords()
 	des = motion.test(time.time()-timeinit)
 	desX = des[0]
 	desY = des[1]
-updateMotion()
-	
-def updateDX():
-	pos = camera.getCoords()
-	global posX 
-	global posY 
-	global DX 
-	global DY 
 	posX = pos[0]
 	posY = pos[1]
 	DX = round(posX-desX,1)
 	DY = round(posY-desY,1)
-updateDX()
+	return pos, des, [DX, DX], [DY, DY]
 
-histDX = [DX, DX]
-histDY = [DY, DY]
+def runSystem():
+	timeout = time.time() + runtime
+	all_errors_x = []
+	all_errors_y = []
+	timestamps = []
+	while True: 
+		tstart = time.time()
+		# get current position, desired position, and error history
+		pos, des, histDX, histDY = update_motion_DX()
 
-all_errors_x = []
-all_errors_y = []
-timestamps = []
+		#Track error history for performance evaluation
+		all_errors_x.append(abs(histDX[0]))
+		all_errors_y.append(abs(histDY[0]))
+		timestamps.append(time.time() - timeinit)
 
-timeout = time.time() + runtime
+		#If error history is too long, drop oldest point.
+		if(len(histDX) > maxHistory):
+			histDX = np.concatenate(([histDX[0]], histDX))
+			histDY = np.concatenate(([histDY[0]], histDY))	
+		#If error history is not full, push the current error.	
+		else:
+			histDX = np.concatenate(([histDX[0]], histDX[0:-1]))
+			histDY = np.concatenate(([histDY[0]], histDY[0:-1]))
+		
+		
+		#Set servo angles based on control algorithm output
+		servo.setx(controlla.PID(histDX))
+		servo.sety(controlla.PID(histDY))
 
-while True: 
-	tstart = time.time()
-	updateMotion()
-	updateDX()
+		camera.dispframe(des[0],des[1])
+		Dt = time.time()-tstart # actual time per cycle
+		print("pos:",str(pos[0]),",",str(pos[1]),"  delta:",str(histDX[0]),",",str(histDY[0]),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
+		if time.time() > timeout:
+			break
+		if (dt > Dt):
+			time.sleep(dt - Dt)
 
-	all_errors_x.append(abs(DX))
-	all_errors_y.append(abs(DY))
-	timestamps.append(time.time() - timeinit)
-
-	if(len(histDX) > historyct):
-		histDX = np.concatenate(([DX], histDX))
-		histDY = np.concatenate(([DY], histDY))		
-	else:
-		histDX = np.concatenate(([DX], histDX[0:-1]))
-		histDY = np.concatenate(([DY], histDY[0:-1]))
-	
-	#servo.setx(controlla.PID(histDX))
-	#servo.sety(controlla.PID(histDY))
-	
-	servo.setx(controlla.PID(histDX))
-	servo.sety(controlla.PID(histDY))
-	
-	camera.dispframe(desX,desY)
-
-	Dt = time.time()-tstart # actual time per cycle
-
-	print("pos:",str(posX),",",str(posY),"  delta:",str(DX),",",str(DY),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
-
-	if time.time() > timeout:
-		break
-	if (dt > Dt):
-		time.sleep(dt - Dt)
-
-score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
-print(f"Performance Score: {score:.2f}")
-print(f"Metrics: {metrics}")
-
-controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
+#score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
+#print(f"Performance Score: {score:.2f}")
+#print(f"Metrics: {metrics}")
+#controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
 
 camera.turnoff()
 servo.turnoff()
