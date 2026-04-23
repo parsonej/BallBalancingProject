@@ -28,7 +28,7 @@ timeinit = time.time()
 # SETUP
 def update_motion_DX():
 	pos = camera.getCoords()
-	des = motion.test(time.time()-timeinit)
+	des = motion.circle(time.time()-timeinit)
 	desX = des[0]
 	desY = des[1]
 	posX = pos[0]
@@ -42,10 +42,17 @@ def runSystem():
 	all_errors_x = []
 	all_errors_y = []
 	timestamps = []
+	step = 0
+	histDX = []
+	histDY = []
+	pos, des, histX, histY = update_motion_DX()
+	histDX = histX
+	histDY = histY
 	while True: 
 		tstart = time.time()
 		# get current position, desired position, and error history
-		pos, des, histDX, histDY = update_motion_DX()
+		pos, des, histX, histY = update_motion_DX()
+		print("HistDX Length: ", len(histDX))
 
 		#Track error history for performance evaluation
 		all_errors_x.append(abs(histDX[0]))
@@ -54,12 +61,12 @@ def runSystem():
 
 		#If error history is too long, drop oldest point.
 		if(len(histDX) > maxHistory):
-			histDX = np.concatenate(([histDX[0]], histDX))
-			histDY = np.concatenate(([histDY[0]], histDY))	
+			histDX = np.concatenate(([histX[0]], histDX))
+			histDY = np.concatenate(([histY[0]], histDY))	
 		#If error history is not full, push the current error.	
 		else:
-			histDX = np.concatenate(([histDX[0]], histDX[0:-1]))
-			histDY = np.concatenate(([histDY[0]], histDY[0:-1]))
+			histDX = np.concatenate(([histX[0]], histDX[0:-1]))
+			histDY = np.concatenate(([histY[0]], histDY[0:-1]))
 		
 		
 		#Set servo angles based on control algorithm output
@@ -68,7 +75,8 @@ def runSystem():
 
 		camera.dispframe(des[0],des[1])
 		Dt = time.time()-tstart # actual time per cycle
-		print("pos:",str(pos[0]),",",str(pos[1]),"  delta:",str(histDX[0]),",",str(histDY[0]),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
+		print("pos:",str(pos[0]),",",str(pos[1]),"  delta:",str(histX[0]),",",str(histY[0]),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
+		step += 1
 		if time.time() > timeout:
 			break
 		if (dt > Dt):
@@ -78,7 +86,7 @@ def runSystem():
 #print(f"Performance Score: {score:.2f}")
 #print(f"Metrics: {metrics}")
 #controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
-
+runSystem()
 camera.turnoff()
 servo.turnoff()
 time.sleep(3)
