@@ -28,7 +28,7 @@ timeinit = time.time()
 # SETUP
 def update_motion_DX():
 	pos = camera.getCoords()
-	des = motion.circle(time.time()-timeinit)
+	des = motion.test(time.time()-timeinit)
 	desX = des[0]
 	desY = des[1]
 	posX = pos[0]
@@ -52,7 +52,7 @@ def runSystem():
 		tstart = time.time()
 		# get current position, desired position, and error history
 		pos, des, histX, histY = update_motion_DX()
-		print("HistDX Length: ", len(histDX))
+		
 
 		#Track error history for performance evaluation
 		all_errors_x.append(abs(histDX[0]))
@@ -70,9 +70,10 @@ def runSystem():
 		
 		
 		#Set servo angles based on control algorithm output
+		print("HistDX Length: ", len(histDX))
 		servo.setx(controlla.PID(histDX))
 		servo.sety(controlla.PID(histDY))
-
+		
 		camera.dispframe(des[0],des[1])
 		Dt = time.time()-tstart # actual time per cycle
 		print("pos:",str(pos[0]),",",str(pos[1]),"  delta:",str(histX[0]),",",str(histY[0]),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
@@ -81,11 +82,12 @@ def runSystem():
 			break
 		if (dt > Dt):
 			time.sleep(dt - Dt)
+	score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
+	print(f"Performance Score: {score:.2f}")
+	print(f"Metrics: {metrics}")
+	controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
 
-#score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
-#print(f"Performance Score: {score:.2f}")
-#print(f"Metrics: {metrics}")
-#controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
+
 runSystem()
 camera.turnoff()
 servo.turnoff()
