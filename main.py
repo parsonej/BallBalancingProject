@@ -37,7 +37,11 @@ def update_motion_DX():
 	DY = round(posY-desY,1)
 	return pos, des, [DX, DX], [DY, DY]
 
-def runSystem():
+def runSystem(mem):
+	# Extract genome from member: [gain, accel, damper, dervSamples, intSamples]
+	genome = mem.get_genome()
+	controlla.configure_pid(genome[0], genome[1], genome[2], genome[3], genome[4])
+	
 	timeout = time.time() + runtime
 	all_errors_x = []
 	all_errors_y = []
@@ -86,9 +90,12 @@ def runSystem():
 	print(f"Performance Score: {score:.2f}")
 	print(f"Metrics: {metrics}")
 	controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
+	servo.setx(0)
+	servo.sety(0)
+	return score
 
 
-runSystem()
+# runSystem()
 camera.turnoff()
 servo.turnoff()
 time.sleep(3)

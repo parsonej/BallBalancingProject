@@ -9,6 +9,23 @@ import matplotlib.pyplot as plt
 #		damper = derivative piD constant	
 #		accel = integral pId constant
 
+# ============== PID Parameters ==============
+gain = -.05
+accel = -.015
+damper = -1.5
+dervSamples = 12
+intSamples = 50
+# =============================================
+
+def configure_pid(pid_gain, pid_accel, pid_damper, pid_derv_samples, pid_int_samples):
+	"""Configure PID parameters from genetic algorithm genome"""
+	global gain, accel, damper, dervSamples, intSamples
+	gain = pid_gain
+	accel = pid_accel
+	damper = pid_damper
+	dervSamples = pid_derv_samples
+	intSamples = pid_int_samples
+
 # do nothing:
 def zero():
 	return 0
@@ -29,19 +46,9 @@ def derv(histDX):
 # position + integral + derivative ctrl:
 def PID(histDX):
 	
-# note: gain = position Pid constant
-#		damper = derivative piD constant	
-#		accel = integral pId constant
-
-	gain = -.05
-	accel = -.015
-	damper = -1.5
-	
-	dervSamples = 12
-	intSamples = 50
 	# deltaX is the current error, areaDX is the mean error over the last intSamples frames, and deltaV is the mean derivative over the last dervSamples frames.
 	deltaX = histDX[0]
-	areaDX = np.average(histDX[0:50]) #this technically finds the mean offset, not the sum of offset. 
+	areaDX = np.average(histDX[0:intSamples])
 	deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
 	
 	return gain*deltaX + accel*areaDX + damper*deltaV
