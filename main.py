@@ -37,9 +37,8 @@ def update_motion_DX():
 	DY = round(posY-desY,1)
 	return pos, des, [DX, DX], [DY, DY]
 
-def runSystem(mem):
+def runSystem(genome):
 	# Extract genome from member: [gain, accel, damper, dervSamples, intSamples]
-	genome = mem.get_genome()
 	controlla.configure_pid(genome[0], genome[1], genome[2], genome[3], genome[4])
 	
 	timeout = time.time() + runtime

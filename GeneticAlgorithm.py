@@ -120,9 +120,9 @@ def run_ga():
 
         # Evaluate every member
         scored = []
-        for member in population:
-            fitness = evaluate(member)
-            scored.append((fitness, member))
+        for mem in population:
+            fitness = evaluate(mem.get_genome())
+            scored.append((fitness, mem))
 
         # Sort best to worst
         scored.sort(key=lambda x: x[0], reverse=True)
@@ -209,3 +209,4 @@ def test_mutation():
     print("Original Member:", member_to_mutate.get_genome())
     print("Mutated Member:", mutated_member.get_genome())
 #test_mutation()
+run_ga()
