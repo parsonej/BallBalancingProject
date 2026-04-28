@@ -21,8 +21,9 @@ pig = pigpio.pi()  # Connect once
     
 def setx(platformangle):
 # Convert angle (-90 to 90) to pulsewidth (500–2500 microseconds)
+    #rint("Platform Angle: ", platformangle)
     angle=convert(np.radians(platformangle))
-    
+    #print("Angle to set: ", angle)
     pulsewidth = int(1500 + (-angle - xOFFSET)*2000/255 )
     # i think that 255 is the full ROM of the servo. or sm. 
     # idk whatever, it seems to get roughly 180deg range, cool w me
@@ -39,10 +40,10 @@ def sety(platformangle):
 
 def constrain(angle):
     if (angle>=maxangle):
-        print("servo angle greater than maximum, constraining; " + str(int(angle)))
+        #print("servo angle greater than maximum, constraining; " + str(int(angle)))
         angle=maxangle
     if (angle<=-maxangle):
-        print("servo angle greater than maximum, constraining; " + str(int(angle)))
+        #print("servo angle greater than maximum, constraining; " + str(int(angle)))
         angle=-maxangle
     return angle
     

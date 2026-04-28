@@ -63,7 +63,7 @@ def test(t):
     return current_pos
 
 
-def manual(t):
+def zero(t):
       
     return [0,0]
 

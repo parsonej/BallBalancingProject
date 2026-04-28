@@ -45,11 +45,17 @@ def derv(histDX):
 
 # position + integral + derivative ctrl:
 def PID(histDX):
-	
+	if(len(histDX) < intSamples):
+		areaDX = np.mean(histDX[0:len(histDX)])
+	else:
+		areaDX = np.mean(histDX[0:intSamples])
+	if(len(histDX) < dervSamples):
+		deltaV = 0
+	else:
+		deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
 	# deltaX is the current error, areaDX is the mean error over the last intSamples frames, and deltaV is the mean derivative over the last dervSamples frames.
 	deltaX = histDX[0]
-	areaDX = np.average(histDX[0:intSamples])
-	deltaV = np.mean(histDX[0:dervSamples-1]-histDX[1:dervSamples])
+	
 	
 	return gain*deltaX + accel*areaDX + damper*deltaV
 
