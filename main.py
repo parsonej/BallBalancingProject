@@ -104,9 +104,9 @@ def runSystem(genome):
 
 
 # ============== GA Parameters ==============
-GENERATIONS = 6          # Number of generations to run
-POP_SIZE = 15              # Population size
-ELITE_COUNT = 5            # Number of top performers to carry to next generation
+GENERATIONS = 3          # Number of generations to run
+POP_SIZE = 5              # Population size
+ELITE_COUNT = 2            # Number of top performers to carry to next generation
 MUTATION_RATE = 0.1        # Probability of mutation for each gene
 MUTATION_AMOUNT = 0.2      # Standard deviation of mutation
 CROSSOVER_TYPE = "uniform" # Type of crossover: "uniform" or "single_point"
@@ -214,13 +214,14 @@ def run_ga():
 		# Evaluate every member
 		num = 1
 		scored = []
-        for mem in population:
+		for mem in population:
 			print("Member#: ", num)
 			print("Genome: ", mem.get_genome())
 			fitness = evaluate(mem.get_genome())
 			scored.append((fitness, mem))
+			num += 1
 		#Sort best to worst
-		scored.sort(key=lambda x: x[0], reverse=True)
+		scored.sort(key=lambda x: x[0], reverse=False)
 		#Store best fitness value for this generation
 		best_fitness = scored[0][0]
 		best_fitness_per_generation.append(best_fitness)
@@ -254,7 +255,9 @@ def run_ga():
 
 		population = next_gen
 
-	best_member = max(scored, key=lambda x: x[0])
+	best_member = min(scored, key=lambda x: x[0])
+	print("Best Member Score: ", best_member)
+	print()
 	return best_member, best_fitness_per_generation, avg_fitness_per_generation
 
 def plot_fitness(best_fitness_per_generation, avg_fitness_per_generation, save_path="fitness_plot.png"):

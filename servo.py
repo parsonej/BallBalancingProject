@@ -9,7 +9,7 @@ xPIN = 18 # GPIO pin of the siginal wire to the x-servo
 yPIN = 19 # GPIO pin of the siginal wire to the y-servo
 xOFFSET = 19 # manual adjustment to fix zero angle
 yOFFSET = 50 #23 manual adjustment to fix zero angle
-maxangle = 50
+maxangle = 40
 
 
 # Setup pigpio

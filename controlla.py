@@ -56,7 +56,12 @@ def PID(histDX):
 	# deltaX is the current error, areaDX is the mean error over the last intSamples frames, and deltaV is the mean derivative over the last dervSamples frames.
 	deltaX = histDX[0]
 	
-	
+	#print("Current PID Genome: ")
+	#print("Gain: ", gain)
+	#print("Accel: ", accel)
+	#print("Damper: ", damper)
+	#print("dervSamples: ", dervSamples)
+	#print("intSamples: ", intSamples)
 	return gain*deltaX + accel*areaDX + damper*deltaV
 
 # sqrt(position) + derivative^2 ctrl:
