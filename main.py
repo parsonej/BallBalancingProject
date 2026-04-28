@@ -255,9 +255,19 @@ def run_ga():
 
 		population = next_gen
 
-	best_member = min(scored, key=lambda x: x[0])
-	print("Best Member Score: ", best_member)
-	print()
+	best_member_score, best_member = min(scored, key=lambda x: x[0])
+	print("\n" + "="*60)
+	print("EVOLUTION COMPLETE - BEST GENOME FOUND:")
+	print("="*60)
+	print(f"Score (Golf Rules): {best_member_score:.4f}")
+	print(f"Genome [Gain, Accel, Damper, DervSamples, IntSamples]:")
+	genome = best_member.get_genome()
+	print(f"  Gain: {genome[0]:.6f}")
+	print(f"  Accel: {genome[1]:.6f}")
+	print(f"  Damper: {genome[2]:.6f}")
+	print(f"  DervSamples: {genome[3]}")
+	print(f"  IntSamples: {genome[4]}")
+	print("="*60 + "\n")
 	return best_member, best_fitness_per_generation, avg_fitness_per_generation
 
 def plot_fitness(best_fitness_per_generation, avg_fitness_per_generation, save_path="fitness_plot.png"):
