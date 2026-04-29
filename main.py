@@ -21,25 +21,25 @@ import random
 import matplotlib.pyplot as plt
 
 # VARIABLES
-runtime = 17 # [s] time before ending program
-rate = 35 # [hz] max rate at which servo positions are set
+runtime = 20 # [s] time before ending program
+rate = 60 # [hz] max rate at which servo positions are set
 dt = 1/rate # needed time between cycles to hit rate
-maxHistory = 100 # number of points captured for vel/int stuff
+maxHistory = 50 # number of points captured for vel/int stuff
 timeinit = time.time()
 
 # SETUP
-def update_motion_DX():
+def update_motion_DX(curTime):
 	pos = camera.getCoords()
-	#des = motion.zero(time.time()-timeinit)
-	#desX = des[0]
-	#desY = des[1]
-	desX = 0 #for initial testing generations 
-	desY = 0 
+	des = motion.test(time.time() - curTime)
+	desX = des[0]
+	desY = des[1]
+	#desX = 0 #for initial testing generations 
+	#desY = 0 
 	posX = pos[0]
 	posY = pos[1]
 	DX = round(posX-desX,1)
 	DY = round(posY-desY,1)
-	return pos, DX, DY
+	return pos, des, DX, DY
 
 def runSystem(genome):
 	#if any(np.isnan(v) for v in genome):
@@ -48,23 +48,26 @@ def runSystem(genome):
 	controlla.configure_pid(genome[0], genome[1], genome[2], genome[3], genome[4])
 	
 	timeout = time.time() + runtime
+	timeBegin = time.time() 
 	all_errors_x = []
 	all_errors_y = []
 	timestamps = []
 	step = 0
-	pos, histX, histY = update_motion_DX()
 	histDX = np.array([])
 	histDY = np.array([])
+	timeCur = time.time()
 	while True: 
 		tstart = time.time()
 		# get current position, desired position, and error history
-		pos, histX, histY = update_motion_DX()
+		pos, des, histX, histY = update_motion_DX(timeCur)
 		
 
 		#Track error history for performance evaluation
-		all_errors_x.append(abs(histX))
-		all_errors_y.append(abs(histY))
-		timestamps.append(time.time() - timeinit)
+		if(time.time() - timeBegin > 3):
+			all_errors_x.append(abs(histX))
+			all_errors_y.append(abs(histY))
+			timestamps.append(time.time() - timeinit)
+		step += 1
 
 		#If error history is too long, drop oldest point.
 		if(len(histDX) > maxHistory):
@@ -75,16 +78,13 @@ def runSystem(genome):
 			histDX = np.concatenate(([histX], histDX))
 			histDY = np.concatenate(([histY], histDY))	
 			
-			
-		
-		
 		#Set servo angles based on control algorithm output
 		#print("HistDX Length: ", len(histDX))
 		#print("Current histDX: ", histDX)
-		servo.setx(controlla.PID(histDX))
-		servo.sety(controlla.PID(histDY))
+		servo.setx(-controlla.PID(histDX))
+		servo.sety(-controlla.PID(histDY))
 		
-		camera.dispframe(0,0) # CHange later----------------------------------------------------------------------------
+		camera.dispframe(des[0], des[1]) # CHange later----------------------------------------------------------------------------
 		Dt = time.time()-tstart # actual time per cycle
 		#print("pos:",str(pos[0]),",",str(pos[1]),"  delta:",str(histX),",",str(histY),"  dt:",round(Dt,3)," rtime",round(time.time()-timeinit,2))
 		step += 1
@@ -94,7 +94,7 @@ def runSystem(genome):
 			time.sleep(dt - Dt)	
 	score, metrics = motion.calculate_performance(all_errors_x, all_errors_y, dt)
 	print(f"Performance Score: {score:.2f}")
-	print(f"Metrics: {metrics}")
+	#print(f"Metrics: {metrics}")
 	controlla.plot_errors(timestamps, all_errors_x, all_errors_y)
 	servo.setx(0)
 	servo.sety(0)
@@ -104,11 +104,11 @@ def runSystem(genome):
 
 
 # ============== GA Parameters ==============
-GENERATIONS = 3          # Number of generations to run
-POP_SIZE = 5              # Population size
-ELITE_COUNT = 2            # Number of top performers to carry to next generation
-MUTATION_RATE = 0.1        # Probability of mutation for each gene
-MUTATION_AMOUNT = 0.2      # Standard deviation of mutation
+GENERATIONS = 6          # Number of generations to run
+POP_SIZE = 20              # Population size
+ELITE_COUNT = 4            # Number of top performers to carry to next generation
+MUTATION_RATE = 0.24        # Probability of mutation for each gene
+MUTATION_AMOUNT = 0.09      # Standard deviation of mutation
 CROSSOVER_TYPE = "uniform" # Type of crossover: "uniform" or "single_point"
 # ===========================================
 
@@ -116,16 +116,16 @@ CROSSOVER_TYPE = "uniform" # Type of crossover: "uniform" or "single_point"
 # Default values
 DEFAULT_GAIN = -0.05
 DEFAULT_ACCEL = -0.015
-DEFAULT_DAMPER = -1.5
+DEFAULT_DAMPER = -.1
 DEFAULT_DERV_SAMPLES = 12
 DEFAULT_INT_SAMPLES = 50
 
 # Ranges for initialization
-GAIN_RANGE = (-0.2, 0.0)
-ACCEL_RANGE = (-0.05, 0.0)
-DAMPER_RANGE = (-3.0, 0.0)
-DERV_SAMPLES_RANGE = (5, 20)
-INT_SAMPLES_RANGE = (20, 100)
+GAIN_RANGE = (-.2, -0.005)
+ACCEL_RANGE = (-.3, -0.0001)
+DAMPER_RANGE = (-.75, -0.005)
+DERV_SAMPLES_RANGE = (2, 2)
+INT_SAMPLES_RANGE = (20, 50)
 # ==================================================
 
 class member:
@@ -142,9 +142,14 @@ def evaluate(mem):
 def initialize_population():
 	"""Create initial population with random genome values within specified ranges"""
 	population = []
-    
+	#Adam - First Man Genome
+	#adam = member([-0.05, -0.001, -0.450, 2, 50])
+    #Create mutated population from starting genome - Adam
+	#for _ in range(POP_SIZE):
+	#	population.append(mutate(adam))
 	for _ in range(POP_SIZE):
 		# Create genome: [gain, accel, damper, dervSamples, intSamples]
+	
 		genome = [
 			random.uniform(GAIN_RANGE[0], GAIN_RANGE[1]),
 			random.uniform(ACCEL_RANGE[0], ACCEL_RANGE[1]),
@@ -216,7 +221,10 @@ def run_ga():
 		scored = []
 		for mem in population:
 			print("Member#: ", num)
-			print("Genome: ", mem.get_genome())
+			genome = mem.get_genome()
+			rounded = [round(x, 4) for x in genome]
+			print("Genome: ", rounded)
+			
 			fitness = evaluate(mem.get_genome())
 			scored.append((fitness, mem))
 			num += 1
@@ -237,8 +245,8 @@ def run_ga():
         
 		# Print statistics
 		print(f"  Best fitness: {best_fitness}")
-		print(f"  Average fitness: {avg_fitness:.4f}")
-		print(f"  Average Delta: {avg_increase:.4f}")
+		print(f"  Average fitness: {avg_fitness:.3f}")
+		print(f"  Average Delta: {avg_increase:.3f}")
 
 		# Select top half
 		top_half = [m for _, m in scored[:len(scored) // 2]]
@@ -262,12 +270,13 @@ def run_ga():
 	print(f"Score (Golf Rules): {best_member_score:.4f}")
 	print(f"Genome [Gain, Accel, Damper, DervSamples, IntSamples]:")
 	genome = best_member.get_genome()
-	print(f"  Gain: {genome[0]:.6f}")
-	print(f"  Accel: {genome[1]:.6f}")
-	print(f"  Damper: {genome[2]:.6f}")
+	print(f"  Gain: {genome[0]:.3f}")
+	print(f"  Accel: {genome[1]:.3f}")
+	print(f"  Damper: {genome[2]:.3f}")
 	print(f"  DervSamples: {genome[3]}")
 	print(f"  IntSamples: {genome[4]}")
 	print("="*60 + "\n")
+	plot_fitness(best_fitness_per_generation, avg_fitness_per_generation)
 	return best_member, best_fitness_per_generation, avg_fitness_per_generation
 
 def plot_fitness(best_fitness_per_generation, avg_fitness_per_generation, save_path="fitness_plot.png"):
@@ -292,7 +301,9 @@ def plot_fitness(best_fitness_per_generation, avg_fitness_per_generation, save_p
 def test_popinit():
 	pop = initialize_population()
 	for member in pop:
-		print(member.get_genome())
+		genome = member.get_genome()
+		rounded = [round(x, 4) for x in genome]
+		print(rounded)
 #test_popinit()
 
 def test_crossover():
@@ -315,13 +326,14 @@ def test_mutation():
 	print("Mutated Member:", mutated_member.get_genome())
 #test_mutation()
 run_ga()
-
-#gain = -.05
-#accel = -.005
-#damper = -0.7
-#dervSamples = 3
-#intSamples = 50
+	
+gain   = -0.05
+accel  = -0.01
+damper = -0.3
+dervSamples = 2
+intSamples = 50
 #runSystem([gain, accel, damper, dervSamples, intSamples])
+
 camera.turnoff()
 servo.turnoff()
 time.sleep(3)

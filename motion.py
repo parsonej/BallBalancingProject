@@ -12,7 +12,7 @@ desy = 0
 
 
 # setpoint format: (time [s], [desx, desy])
-# test duration: 5s centering + 20s runtime 
+# test duration: 5s centering, 20s runtime 
 setpoints = [
     (0, [0, 0]), 
     (5, [60, 60]), 
@@ -54,6 +54,7 @@ current_pos = test_posns[0]
 def test(t):
     # standard test for functionality. 
     # uses test setpoints defined above
+    #print("time: ", t)
     for i in range(len(test_times)):
         if t >= test_times[i]:
             current_pos = test_posns[i]

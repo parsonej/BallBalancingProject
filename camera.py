@@ -26,7 +26,7 @@ def getCoords():
 	rotated = cv2.rotate(resized, cv2.ROTATE_180)
 	blur = cv2.blur(rotated,(30,30))
 	gray = cv2.cvtColor(blur, cv2.COLOR_RGB2GRAY)
-	ret,thresh = cv2.threshold(gray,220,255,0)
+	ret,thresh = cv2.threshold(gray,225,255,0)
 	
 	# calculate moments of binary image
 	M = cv2.moments(thresh)
@@ -43,14 +43,13 @@ def getCoords():
 	return (pxtocoord(cX),pxtocoord(cY))
 	
 def dispframe(desX,desY):
-	settarget()
+	#settarget()
+	target = rotated
 	
 	desX = coordtopx(desX)
 	desY = coordtopx(desY)
 	# mark the ball center and desired location
-	# dist2center = math.hypot(cX-338,cY-338)
-	circrad = round(60 + math.hypot(cX-338,cY-338)/40)
-	# circrad = 60
+	circrad = 62
 	
 	cv2.circle(target, (desX, desY), circrad-1, (0, 255, 0),2)
 	cv2.circle(target, (desX, desY), circrad+1, (255, 0, 0),2)
@@ -66,19 +65,18 @@ def dispframe(desX,desY):
 		print("you saved a frame")
 		time.sleep(.5)
 	
-def settarget():
+def rotatetarget():
 	# sets frame to display based on current runtime
-	# timeLoop = int(time.time()/5)%3
-	timeLoop = 3
-	global target
+	timeLoop = int(time.time()*2)%4
+	#timeLoop = 3
 	if(timeLoop == 0):
-		target = thresh
+		return thresh
 	elif(timeLoop == 1):
-		target = blur
+		return blur
 	elif(timeLoop == 2):
-		target = gray
+		return gray
 	else:
-		target = rotated
+		return rotated
 		
 
 def pxtocoord(pixel_location):
